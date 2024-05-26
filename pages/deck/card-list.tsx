@@ -127,14 +127,16 @@ export default function CardList () {
     };
 
     const updateLocalStorage = (newCounts: { [key: string]: number }) => {
-        localStorage.setItem('cardCounts', JSON.stringify(newCounts));
-        const updatedCards = Object.entries(newCounts)
-            .flatMap(([uid, count]) =>
-                Array(count).fill(images.find(card => card.uid === uid))
-            )
-            .filter(Boolean) as ImageData[];
-        setDeck({ ...deck, cards: updatedCards });
-        localStorage.setItem('cards', JSON.stringify(updatedCards));
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('cardCounts', JSON.stringify(newCounts));
+            const updatedCards = Object.entries(newCounts)
+                .flatMap(([uid, count]) =>
+                    Array(count).fill(images.find(card => card.uid === uid))
+                )
+                .filter(Boolean) as ImageData[];
+            setDeck({ ...deck, cards: updatedCards });
+            localStorage.setItem('cards', JSON.stringify(updatedCards));
+        }
     };
 
     const handleDeckButtonClick = () => {
