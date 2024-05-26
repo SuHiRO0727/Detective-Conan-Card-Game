@@ -9,19 +9,29 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.3.4",
+    "aws-sdk": "^2.1599.0",
+    "chart.js": "^4.4.3",
+    "dom-to-image": "^2.6.0",
+    "firebase": "^10.11.0",
+    "html2canvas": "^1.4.1",
+    "modern-screenshot": "^4.4.39",
+    "next": "14.0.3",
     "react": "^18",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
-    "next": "14.0.3"
+    "react-hook-form": "^7.51.3",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "eslint": "^8",
-    "eslint-config-next": "14.0.3"
+    "typescript": "^5"
   }
 }
