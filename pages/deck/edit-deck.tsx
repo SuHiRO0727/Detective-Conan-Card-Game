@@ -382,3 +382,17 @@
 //     );
 
 // }
+
+// pages/deck/edit-deck.js
+import React from 'react';
+
+const EditDeck = () => {
+  return (
+    <div>
+      <h1>Edit Deck Page</h1>
+      {/* その他のコンテンツ */}
+    </div>
+  );
+};
+
+export default EditDeck;

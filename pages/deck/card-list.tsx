@@ -1,4 +1,3 @@
-// /deck/card-list.tsx
 import DeckConfirmationModal from "@/components/template/deck-confirmation-modal";
 import Footer from "@/components/template/footer";
 import Header from "@/components/template/header";
@@ -26,27 +25,53 @@ interface ImageData {
     rarity: string;
 }
 
-export default function CardList () {
-    const router = useRouter()
+interface Deck {
+    name: string;
+    partner?: ImageData;
+    case?: ImageData;
+    cards: ImageData[];
+}
+
+const getLocalStorageItem = (key: string) => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem(key);
+    }
+    return null;
+};
+
+const setLocalStorageItem = (key: string, value: string) => {
+    if (typeof window !== 'undefined') {
+        localStorage.setItem(key, value);
+    }
+};
+
+const removeLocalStorageItem = (key: string) => {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem(key);
+    }
+};
+
+export default function CardList() {
+    const router = useRouter();
     const [searchName, setSearchName] = useState('');
     const [searchColor, setSearchColor] = useState('');
     const [searchLevels, setSearchLevels] = useState<number[]>([]);
     const [searchType, setSearchType] = useState('');
-    const [searchApMin, setSearchApMin] = useState<number | null>(null); // AP最小値
-    const [searchApMax, setSearchApMax] = useState<number | null>(null); // AP最大値
+    const [searchApMin, setSearchApMin] = useState<number | null>(null);
+    const [searchApMax, setSearchApMax] = useState<number | null>(null);
     const [searchLp, setSearchLp] = useState('');
     const [searchProductName, setSearchProductName] = useState('');
     const [images, setImages] = useState<ImageData[]>([]);
     const [filteredImages, setFilteredImages] = useState<ImageData[]>(images);
     const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
     const [showDeckModal, setShowDeckModal] = useState(false);
-    const [deck, setDeck] = useState<{ name: string; partner?: ImageData; case?: ImageData; cards: ImageData[] }>({
+    const [cardCounts, setCardCounts] = useState<{ [key: string]: number }>({});
+    const [deck, setDeck] = useState<Deck>({
         name: '',
-        partner: JSON.parse(localStorage.getItem('partner') || 'null') || undefined,
-        case: JSON.parse(localStorage.getItem('case') || 'null') || undefined,
-        cards: JSON.parse(localStorage.getItem('cards') || '[]') || [], // 初期化時に空配列にする
+        partner: undefined,
+        case: undefined,
+        cards: [],
     });
-    
 
     useEffect(() => {
         const fetchCards = async () => {
@@ -68,6 +93,27 @@ export default function CardList () {
         fetchCards();
     }, []);
 
+    useEffect(() => {
+        const savedCounts = getLocalStorageItem('cardCounts');
+        if (savedCounts) {
+            setCardCounts(JSON.parse(savedCounts));
+        }
+    }, []);
+
+    useEffect(() => {
+        const partner = getLocalStorageItem('partner');
+        const caseCard = getLocalStorageItem('case');
+        const cards = getLocalStorageItem('cards');
+        if (partner || caseCard || cards) {
+            setDeck({
+                name: '',
+                partner: partner ? JSON.parse(partner) : undefined,
+                case: caseCard ? JSON.parse(caseCard) : undefined,
+                cards: cards ? JSON.parse(cards) : [],
+            });
+        }
+    }, []);
+
     const handleLevelChange = (level: number) => {
         setSearchLevels(prevLevels =>
             prevLevels.includes(level)
@@ -75,8 +121,6 @@ export default function CardList () {
                 : [...prevLevels, level]
         );
     };
-
-    const [cardCounts, setCardCounts] = useState<{ [key: string]: number }>(JSON.parse(localStorage.getItem('cardCounts') || '{}'));
 
     const filterImages = () => {
         const results = images.filter((image) => {
@@ -127,16 +171,14 @@ export default function CardList () {
     };
 
     const updateLocalStorage = (newCounts: { [key: string]: number }) => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('cardCounts', JSON.stringify(newCounts));
-            const updatedCards = Object.entries(newCounts)
-                .flatMap(([uid, count]) =>
-                    Array(count).fill(images.find(card => card.uid === uid))
-                )
-                .filter(Boolean) as ImageData[];
-            setDeck({ ...deck, cards: updatedCards });
-            localStorage.setItem('cards', JSON.stringify(updatedCards));
-        }
+        setLocalStorageItem('cardCounts', JSON.stringify(newCounts));
+        const updatedCards = Object.entries(newCounts)
+            .flatMap(([uid, count]) =>
+                Array(count).fill(images.find(card => card.uid === uid))
+            )
+            .filter(Boolean) as ImageData[];
+        setDeck({ ...deck, cards: updatedCards });
+        setLocalStorageItem('cards', JSON.stringify(updatedCards));
     };
 
     const handleDeckButtonClick = () => {
@@ -168,7 +210,6 @@ export default function CardList () {
                 >
                     デッキ確認
                 </button>
-                {/* 左側: カードの絞り込みフォーム */}
                 <div className="w-1/4 bg-white p-6 shadow-lg">
                     <h2 className="text-xl font-bold mb-4">検索</h2>
                     <form className="space-y-4">
@@ -286,7 +327,6 @@ export default function CardList () {
                         </button>
                     </form>
                 </div>
-                {/* 右側: カード一覧 */}
                 <div className="flex-1 p-6 overflow-y-auto">
                     <h2 className="text-xl font-bold mb-4">カード一覧</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -305,7 +345,6 @@ export default function CardList () {
             </div>
             <Footer />
 
-            {/* モーダル */}
             {selectedImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
@@ -340,7 +379,6 @@ export default function CardList () {
                     </div>
                 </div>
             )}
-            {/* デッキ確認モーダル */}
             <DeckConfirmationModal
                 deck={deck}
                 show={showDeckModal}
